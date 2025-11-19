@@ -31,69 +31,74 @@ namespace Esp32
 
             foreach (var port in ports)
             {
-                MessageBox.Show((string)port);
-                FunctionComboBox.Items.Add((string)port);
+                ComComboBox.Items.Add((string)port);
+            }
+
+            if (ports.Length > 0)
+            {
+                ComComboBox.SelectedIndex = 0;
             }
 
             MyModel = new PlotModel { Title = "Đồ thị hàm số" };
             DataContext = this;
 
-            DrawFunction("y = x"); // mặc định
+            DrawData("COM1"); // mặc định
         }
 
-        private void DrawFunction(string funcName)
-        {
-            var model = new PlotModel { Title = $"Đồ thị: {funcName}" };
-            var series = new LineSeries { StrokeThickness = 2 };
+        //private void DrawData(string funcName)
+        //{
+        //    var model = new PlotModel { Title = $"Đồ thị: {funcName}" };
 
-            // Vẽ trong khoảng -10 -> 10
-            for (double x = -10; x <= 10; x += 0.1)
-            {
-                double y = 0;
+        //    var series = new LineSeries { StrokeThickness = 2 };
 
-                switch (funcName)
-                {
-                    case "y = x":
-                        y = x;
-                        break;
-                    case "y = x²":
-                        y = x * x;
-                        break;
-                    case "y = sin(x)":
-                        y = Math.Sin(x);
-                        break;
-                }
+        //    // Vẽ trong khoảng -10 -> 10
+        //    for (double x = -10; x <= 10; x += 0.1)
+        //    {
+        //        double y = 0;
 
-                series.Points.Add(new DataPoint(x, y));
-            }
+        //        switch (funcName)
+        //        {
+        //            case "COM1":
+        //                y = x;
+        //                break;
+        //            case "y = x²":
+        //                y = x * x;
+        //                break;
+        //            case "y = sin(x)":
+        //                y = Math.Sin(x);
+        //                break;
+        //        }
 
-            model.Series.Add(series);
-            MyModel = model;
+        //        series.Points.Add(new DataPoint(x, y));
+        //    }
 
-            // cập nhật binding cho PlotView
-            PlotView1.Model = MyModel;
-        }
+        //    model.Series.Add(series);
+        //    MyModel = model;
+
+        //    // cập nhật binding cho PlotView
+        //    PlotView1.Model = MyModel;
+        //}
 
         private void DrawButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedItem = FunctionComboBox.SelectedItem as ComboBoxItem;
+            var selectedItem = ComComboBox.SelectedItem as ComboBoxItem;
             if (selectedItem != null)
             {
                 string funcName = selectedItem.Content.ToString();
-                DrawFunction(funcName);
+                DrawData(funcName);
             }
         }
 
-        private void FunctionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // Nếu muốn chọn là vẽ luôn, có thể gọi lại DrawFunction ở đây
-            var selectedItem = FunctionComboBox.SelectedItem as ComboBoxItem;
-            if (selectedItem != null)
-            {
-                string funcName = selectedItem.Content.ToString();
-                DrawFunction(funcName);
-            }
-        }
+        //private void FunctionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+        //    // Nếu muốn chọn là vẽ luôn, có thể gọi lại DrawFunction ở đây
+        //    var selectedItem = FunctionComboBox.SelectedItem as ComboBoxItem;
+        //    if (selectedItem != null)
+        //    {
+        //        string funcName = selectedItem.Content.ToString();
+        //        DrawFunction(funcName);
+        //    }
+        //}
 
         private void MniFileExit_Click(object sender, RoutedEventArgs e)
         {

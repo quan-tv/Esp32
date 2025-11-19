@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Esp32")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+34c81c23a6a2c8e6ad2b0c91184b5799bb63bf38")]
 [assembly: System.Reflection.AssemblyProductAttribute("Esp32")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Esp32")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
