@@ -27,6 +27,8 @@ namespace Esp32
             InitializeComponent();
 
             //Danh sách các cổng COM
+
+            //Them mot dummy comment
             var ports = System.IO.Ports.SerialPort.GetPortNames();
 
             foreach (var port in ports)
