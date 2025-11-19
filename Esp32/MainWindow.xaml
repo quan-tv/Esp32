@@ -47,10 +47,10 @@
                       Width="160">
                 </ComboBox>
 
-                <Button Content="Vẽ đồ thị"
+                <Button x:Name="BtnStart" Content="Start"
                     Width="100"
                     Height="30"
-                    Click="DrawButton_Click"/>
+                    Click="StartButton_Click"/>
             </StackPanel>
         </Grid>
     </DockPanel>

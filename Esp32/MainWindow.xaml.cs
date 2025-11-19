@@ -49,38 +49,87 @@ namespace Esp32
         {
             var model = new PlotModel { Title = $"Đồ thị: {funcName}" };
 
-            var series = new LineSeries { StrokeThickness = 2 };
+            var series1 = new LineSeries { StrokeThickness = 2 };
+            var series2 = new LineSeries { StrokeThickness = 2 };
 
             // Vẽ trong khoảng -10 -> 10
-            for (double x = -10; x <= 10; x += 0.1)
+            //for (double x = -10; x <= 10; x += 0.1)
+            //{
+            //    double y = 0;
+
+            //    switch (funcName)
+            //    {
+            //        case "COM1":
+            //            y = x;
+            //            break;
+            //        case "y = x²":
+            //            y = x * x;
+            //            break;
+            //        case "y = sin(x)":
+            //            y = Math.Sin(x);
+            //            break;
+            //    }
+
+            //    series.Points.Add(new DataPoint(x, y));
+            //}
+
+            for (int x = 0; x < 10; x++)
             {
-                double y = 0;
+                int y = x;
 
-                switch (funcName)
-                {
-                    case "COM1":
-                        y = x;
-                        break;
-                    case "y = x²":
-                        y = x * x;
-                        break;
-                    case "y = sin(x)":
-                        y = Math.Sin(x);
-                        break;
-                }
+                int z = x * 2;
 
-                series.Points.Add(new DataPoint(x, y));
+                series1.Points.Add(new DataPoint(x, y));
+                series2.Points.Add(new DataPoint(x, z));
             }
 
-            model.Series.Add(series);
+            model.Series.Add(series1);
+            model.Series.Add(series2);
             MyModel = model;
 
             // cập nhật binding cho PlotView
             PlotView1.Model = MyModel;
         }
 
-        private void DrawButton_Click(object sender, RoutedEventArgs e)
+        private void StartButton_Click(object sender, RoutedEventArgs e)
         {
+            if (BtnStart.Content == "Start")
+            {
+                BtnStart.Content = "Stop";
+                //Bat dau doc du lieu va ve
+            }
+            else
+            {
+                BtnStart.Content = "Start";
+                //Dung viec doc du lieu va xoa do thi
+
+                // 1. Lưu lại trạng thái zoom hiện tại của tất cả axes
+                var axisStates = MyModel.Axes
+                    .Select(a => new
+                    {
+                        Axis = a,
+                        Min = a.ActualMinimum,
+                        Max = a.ActualMaximum
+                    })
+                    .ToList();
+
+                // 2. Bắt đầu update để tránh refresh giữa chừng
+                MyModel.Series.Clear();
+
+                // 3. Áp lại zoom cũ cho từng axis
+                foreach (var s in axisStates)
+                {
+                    // Chỉ zoom nếu range hợp lệ
+                    if (!double.IsNaN(s.Min) && !double.IsNaN(s.Max) && s.Min < s.Max)
+                    {
+                        s.Axis.Zoom(s.Min, s.Max);
+                    }
+                }
+
+                // 4. Cập nhật lại plot
+                PlotView1.InvalidatePlot(true);
+            }
+
             var selectedItem = ComComboBox.SelectedItem as ComboBoxItem;
             if (selectedItem != null)
             {
