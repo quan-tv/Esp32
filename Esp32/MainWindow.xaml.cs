@@ -45,39 +45,39 @@ namespace Esp32
             DrawData("COM1"); // mặc định
         }
 
-        //private void DrawData(string funcName)
-        //{
-        //    var model = new PlotModel { Title = $"Đồ thị: {funcName}" };
+        private void DrawData(string funcName)
+        {
+            var model = new PlotModel { Title = $"Đồ thị: {funcName}" };
 
-        //    var series = new LineSeries { StrokeThickness = 2 };
+            var series = new LineSeries { StrokeThickness = 2 };
 
-        //    // Vẽ trong khoảng -10 -> 10
-        //    for (double x = -10; x <= 10; x += 0.1)
-        //    {
-        //        double y = 0;
+            // Vẽ trong khoảng -10 -> 10
+            for (double x = -10; x <= 10; x += 0.1)
+            {
+                double y = 0;
 
-        //        switch (funcName)
-        //        {
-        //            case "COM1":
-        //                y = x;
-        //                break;
-        //            case "y = x²":
-        //                y = x * x;
-        //                break;
-        //            case "y = sin(x)":
-        //                y = Math.Sin(x);
-        //                break;
-        //        }
+                switch (funcName)
+                {
+                    case "COM1":
+                        y = x;
+                        break;
+                    case "y = x²":
+                        y = x * x;
+                        break;
+                    case "y = sin(x)":
+                        y = Math.Sin(x);
+                        break;
+                }
 
-        //        series.Points.Add(new DataPoint(x, y));
-        //    }
+                series.Points.Add(new DataPoint(x, y));
+            }
 
-        //    model.Series.Add(series);
-        //    MyModel = model;
+            model.Series.Add(series);
+            MyModel = model;
 
-        //    // cập nhật binding cho PlotView
-        //    PlotView1.Model = MyModel;
-        //}
+            // cập nhật binding cho PlotView
+            PlotView1.Model = MyModel;
+        }
 
         private void DrawButton_Click(object sender, RoutedEventArgs e)
         {
