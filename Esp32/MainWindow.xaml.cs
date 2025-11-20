@@ -17,6 +17,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Esp32.View;
+using Esp32;
 
 namespace Esp32
 {
@@ -28,16 +29,16 @@ namespace Esp32
     {
         public PlotModel MyModel { get; set; }
 
-        private readonly List<LineSeries> loadcellsList = new();   // quản lý tất cả series
+        private readonly List<LineSeries> loadcellsList = new();   // List chứa các cell
         private DispatcherTimer _timer;
         private double _x = 0;
 
-        private const int LoadCellsCount = 6;   // số series
+        private const int LoadCellsCount = 6;   // số cell
         public MainWindow()
         {
             InitializeComponent();
 
-            DataContext = this;      // để XAML Binding MyModel dùng được
+            DataContext = this;
 
             InitOxyPlot();
             InitCOMPort();
@@ -55,6 +56,7 @@ namespace Esp32
                 COMComboBox.Items.Add((string)port);
             }
 
+            // Chỉ cho phép tải dữ liệu nếu có ít nhất 1 cồng COM
             if (ports.Length > 0)
             {
                 COMComboBox.SelectedIndex = 0;
@@ -91,17 +93,17 @@ namespace Esp32
                 LegendMargin = 4
             });
 
-            // Tạo 6 series và add vào list + model
+            // Tạo 6 line và add vào list + model
             for (int i = 0; i < LoadCellsCount; i++)
             {
-                var series = new LineSeries
+                var line = new LineSeries
                 {
                     Title = $"Loadcell {i + 1}",
                     StrokeThickness = 2
                 };
 
-                loadcellsList.Add(series);
-                model.Series.Add(series);
+                loadcellsList.Add(line);
+                model.Series.Add(line);
             }
 
             MyModel = model;
@@ -111,25 +113,21 @@ namespace Esp32
         private void InitTimer()
         {
             _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromMilliseconds(12.5); // 80 lần/giây
+            _timer.Interval = TimeSpan.FromMilliseconds(0.0125); // 80 lần/giây
             _timer.Tick += Timer_Tick;
         }
 
         private void Timer_Tick(object? sender, EventArgs e)
         {
-            _x += 0.1;
+            _x += 0.0125;
 
-            // DEMO: 6 giá trị khác nhau, sau này bạn thay bằng dữ liệu đọc từ COM
-            double[] values =
-            {
-                Math.Sin(_x),
-                Math.Cos(_x),
-                Math.Sin(_x * 0.5),
-                Math.Cos(_x * 0.5),
-                Math.Sin(_x * 0.2),
-                Math.Cos(_x * 0.2)
-            };
+            // DEMO: 6 giá trị khác nhau cho 6 cell -> cần thay bằng dữ liệu từ Hệ thống
+            // values sẽ là mảng chứa 6 giá trị
 
+            HeThong heThong = new HeThong();
+
+            double[] values = heThong.ReadData(_x);
+            
             // Đảm bảo mảng values đủ số series
             int count = Math.Min(loadcellsList.Count, values.Length);
 
@@ -137,9 +135,6 @@ namespace Esp32
             {
                 loadcellsList[i].Points.Add(new DataPoint(_x, values[i]));
             }
-
-            // KHÔNG xóa dữ liệu cũ nếu muốn vẽ nối tiếp
-            // (nếu muốn giới hạn số điểm thì thêm RemoveAt ở đây)
 
             // Auto scroll trục X nếu muốn
             var xAxis = MyModel.Axes[0];
