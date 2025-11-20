@@ -1,4 +1,5 @@
 ﻿using OxyPlot;
+using OxyPlot.Axes;
 using OxyPlot.Series;
 using OxyPlot.Wpf;
 using System.Diagnostics;
@@ -29,52 +30,43 @@ namespace Esp32
 
             //Danh sách các cổng COM
 
-            //Them mot dummy comment
             var ports = System.IO.Ports.SerialPort.GetPortNames();
 
             foreach (var port in ports)
             {
-                ComComboBox.Items.Add((string)port);
+                COMComboBox.Items.Add((string)port);
             }
 
             if (ports.Length > 0)
             {
-                ComComboBox.SelectedIndex = 0;
+                COMComboBox.SelectedIndex = 0;
             }
 
-            MyModel = new PlotModel { Title = "Đồ thị hàm số" };
             DataContext = this;
 
-            DrawData("COM1"); // mặc định
+            InitOxyPlot();
+
+            //DrawData("COM1"); // mặc định
         }
 
-        private void DrawData(string funcName)
+        //Khởi tạo đồ thị
+        private void InitOxyPlot()
         {
-            var model = new PlotModel { Title = $"Đồ thị: {funcName}" };
+            var model = new PlotModel { Title = "Đồ thị: " };
+
+            model.Axes.Add(new LinearAxis { Position = AxisPosition.Bottom });
+            model.Axes.Add(new LinearAxis { Position = AxisPosition.Left });
+
+            MyModel = model;
+            EspPlotView.Model = model;
+        }
+
+        private void DrawData(string COMName)
+        {
+            var model = new PlotModel { Title = $"Đồ thị: {COMName}" };
 
             var series1 = new LineSeries { StrokeThickness = 2 };
             var series2 = new LineSeries { StrokeThickness = 2 };
-
-            // Vẽ trong khoảng -10 -> 10
-            //for (double x = -10; x <= 10; x += 0.1)
-            //{
-            //    double y = 0;
-
-            //    switch (funcName)
-            //    {
-            //        case "COM1":
-            //            y = x;
-            //            break;
-            //        case "y = x²":
-            //            y = x * x;
-            //            break;
-            //        case "y = sin(x)":
-            //            y = Math.Sin(x);
-            //            break;
-            //    }
-
-            //    series.Points.Add(new DataPoint(x, y));
-            //}
 
             for (int x = 0; x < 10; x++)
             {
@@ -91,15 +83,24 @@ namespace Esp32
             MyModel = model;
 
             // cập nhật binding cho PlotView
-            PlotView1.Model = MyModel;
+            EspPlotView.Model = model;
         }
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            if (BtnStart.Content == "Start")
+            if (BtnStart.Content.ToString() == "Start")
             {
                 BtnStart.Content = "Stop";
+                
+                //Lay cong COM hien tai
+                var selectedItem = COMComboBox.SelectedItem as string;
+                
                 //Bat dau doc du lieu va ve
+                if (selectedItem != null)
+                {
+                    string comPortName = selectedItem;
+                    DrawData(selectedItem);
+                }
             }
             else
             {
@@ -130,27 +131,9 @@ namespace Esp32
                 }
 
                 // 4. Cập nhật lại plot
-                PlotView1.InvalidatePlot(true);
-            }
-
-            var selectedItem = ComComboBox.SelectedItem as ComboBoxItem;
-            if (selectedItem != null)
-            {
-                string funcName = selectedItem.Content.ToString();
-                DrawData(funcName);
+                EspPlotView.InvalidatePlot(true);
             }
         }
-
-        //private void FunctionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        //{
-        //    // Nếu muốn chọn là vẽ luôn, có thể gọi lại DrawFunction ở đây
-        //    var selectedItem = FunctionComboBox.SelectedItem as ComboBoxItem;
-        //    if (selectedItem != null)
-        //    {
-        //        string funcName = selectedItem.Content.ToString();
-        //        DrawFunction(funcName);
-        //    }
-        //}
 
         private void MniFileExit_Click(object sender, RoutedEventArgs e)
         {
