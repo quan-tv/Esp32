@@ -1,0 +1,21 @@
+﻿<Window x:Class="Esp32.View.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="About"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="SingleBorderWindow">
+
+    <Grid Width="250">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="150"/>
+            <RowDefinition Height="150"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Day là text gioi thieu phan mem"></TextBlock>
+        <TextBlock Grid.Row="1" Text="Day là text gioi thieu tac gia"></TextBlock>
+        <Button x:Name="BtnOK" Grid.Row="2" Margin="5" Content="OK" Width="100" Click="BtnOK_Click"></Button>
+    </Grid>
+</Window>

@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Esp32.View;
 
 namespace Esp32
 {
@@ -27,11 +28,11 @@ namespace Esp32
     {
         public PlotModel MyModel { get; set; }
 
-        private readonly List<LineSeries> _seriesList = new();   // quản lý tất cả series
+        private readonly List<LineSeries> loadcellsList = new();   // quản lý tất cả series
         private DispatcherTimer _timer;
         private double _x = 0;
 
-        private const int SeriesCount = 6;   // số series
+        private const int LoadCellsCount = 6;   // số series
         public MainWindow()
         {
             InitializeComponent();
@@ -57,6 +58,10 @@ namespace Esp32
             if (ports.Length > 0)
             {
                 COMComboBox.SelectedIndex = 0;
+                BtnStart.IsEnabled = true;
+            } else
+            {
+                BtnStart.IsEnabled = false;
             }
         }
 
@@ -87,7 +92,7 @@ namespace Esp32
             });
 
             // Tạo 6 series và add vào list + model
-            for (int i = 0; i < SeriesCount; i++)
+            for (int i = 0; i < LoadCellsCount; i++)
             {
                 var series = new LineSeries
                 {
@@ -95,7 +100,7 @@ namespace Esp32
                     StrokeThickness = 2
                 };
 
-                _seriesList.Add(series);
+                loadcellsList.Add(series);
                 model.Series.Add(series);
             }
 
@@ -126,11 +131,11 @@ namespace Esp32
             };
 
             // Đảm bảo mảng values đủ số series
-            int count = Math.Min(_seriesList.Count, values.Length);
+            int count = Math.Min(loadcellsList.Count, values.Length);
 
             for (int i = 0; i < count; i++)
             {
-                _seriesList[i].Points.Add(new DataPoint(_x, values[i]));
+                loadcellsList[i].Points.Add(new DataPoint(_x, values[i]));
             }
 
             // KHÔNG xóa dữ liệu cũ nếu muốn vẽ nối tiếp
@@ -154,9 +159,9 @@ namespace Esp32
 
                 // Nếu muốn reset mỗi lần Start:
                 _x = 0;
-                foreach (var s in _seriesList)
+                foreach (var cell in loadcellsList)
                 {
-                    s.Points.Clear();
+                    cell.Points.Clear();
                 }
 
                 _timer.Start();
@@ -171,6 +176,15 @@ namespace Esp32
         private void MniFileExit_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void MniAbout_Click(object sender, RoutedEventArgs e)
+        {
+            Opacity = 0.9;
+            //MessageBox.Show("Thong tin phan mem va tac gia", "About");
+            AboutWindow aboutWindow = new AboutWindow(this);
+            aboutWindow.ShowDialog();
+            Opacity = 1;
         }
     }
 }

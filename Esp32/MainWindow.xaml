@@ -12,6 +12,9 @@
             <MenuItem Header="File" Margin="2">
                 <MenuItem x:Name="MniFileExit" Header="Exit" Click="MniFileExit_Click"/>
             </MenuItem>
+            <MenuItem x:Name="MniHelp" Header="Help">
+                <MenuItem x:Name="MniAbout" Header="About" Click="MniAbout_Click"></MenuItem>
+            </MenuItem>
         </Menu>
 
         <Grid>
@@ -19,19 +22,14 @@
                 <ColumnDefinition/>
                 <!-- Plot -->
                 <ColumnDefinition Width="Auto"/>
-                <!-- Đường kẻ dọc -->
-                <ColumnDefinition Width="215"/>
                 <!-- Panel -->
             </Grid.ColumnDefinitions>
 
             <!-- BÊN TRÁI: Đồ thị -->
-            <oxy:PlotView Grid.Column="0"
-                      x:Name="EspPlotView"
-                      Model="{Binding MyModel}"
-                      Margin="10" />
+            <oxy:PlotView Grid.Column="0" x:Name="EspPlotView" Model="{Binding MyModel}" Margin="5" />
 
-            <!-- ĐƯỜNG KẺ DỌC (thay cho Separator) -->
-            <Border Grid.Column="2" Margin="0 25 10 0" BorderBrush="Gray" BorderThickness="1" CornerRadius="3" VerticalAlignment="Top">
+            <!-- BÊN PHẢI: Setting -->
+            <Border Grid.Column="1" Margin="0 25 10 0" BorderBrush="Gray" BorderThickness="1" CornerRadius="3" VerticalAlignment="Top">
                 <StackPanel Margin="10">
                     <StackPanel Orientation="Horizontal">
                         <Label Content="Cổng COM:" FontWeight="Bold" Width="70" VerticalAlignment="Center"/>
