@@ -16,11 +16,11 @@
 
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition/>
                 <!-- Plot -->
                 <ColumnDefinition Width="Auto"/>
                 <!-- Đường kẻ dọc -->
-                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="300"/>
                 <!-- Panel -->
             </Grid.ColumnDefinitions>
 

@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Esp32
 {
@@ -24,10 +25,25 @@ namespace Esp32
     public partial class MainWindow : Window
     {
         public PlotModel MyModel { get; set; }
+
+        private LineSeries _series1;
+        private LineSeries _series2;
+        private DispatcherTimer _timer;
+        private double _x = 0;
+
         public MainWindow()
         {
             InitializeComponent();
 
+            DataContext = this;      // để XAML Binding MyModel dùng được
+
+            InitOxyPlot();
+            InitCOMPort();
+            InitTimer();
+        }
+
+        private void InitCOMPort()
+        {
             //Danh sách các cổng COM
 
             var ports = System.IO.Ports.SerialPort.GetPortNames();
@@ -41,49 +57,68 @@ namespace Esp32
             {
                 COMComboBox.SelectedIndex = 0;
             }
-
-            DataContext = this;
-
-            InitOxyPlot();
-
-            //DrawData("COM1"); // mặc định
         }
 
         //Khởi tạo đồ thị
         private void InitOxyPlot()
         {
-            var model = new PlotModel { Title = "Đồ thị: " };
+            var model = new PlotModel { Title = "Đồ thị Esp32 " };
 
-            model.Axes.Add(new LinearAxis { Position = AxisPosition.Bottom });
-            model.Axes.Add(new LinearAxis { Position = AxisPosition.Left });
+            model.Axes.Add(new LinearAxis
+            {
+                Position = AxisPosition.Bottom,
+                Title = "Thời gian"
+            });
+
+            model.Axes.Add(new LinearAxis
+            {
+                Position = AxisPosition.Left,
+                Title = "Khối lượng"
+            });
+
+            // Tạo 2 series, giữ lại ở field để timer thêm điểm
+            _series1 = new LineSeries { Title = "Line 1", StrokeThickness = 2 };
+            _series2 = new LineSeries { Title = "Line 2", StrokeThickness = 2 };
+
+            model.Series.Add(_series1);
+            model.Series.Add(_series2);
 
             MyModel = model;
+
+            // Vì đã Binding Model="{Binding MyModel}" trong XAML,
+            // về lý thuyết chỉ cần MyModel = model là đủ.
+            // Nhưng để chắc, vẫn set trực tiếp:
             EspPlotView.Model = model;
         }
 
-        private void DrawData(string COMName)
+        private void InitTimer()
         {
-            var model = new PlotModel { Title = $"Đồ thị: {COMName}" };
+            _timer = new DispatcherTimer();
+            _timer.Interval = TimeSpan.FromMilliseconds(12.5); // 80 lần/giây
+            _timer.Tick += Timer_Tick;
+        }
 
-            var series1 = new LineSeries { StrokeThickness = 2 };
-            var series2 = new LineSeries { StrokeThickness = 2 };
+        private void Timer_Tick(object? sender, EventArgs e)
+        {
+            _x += 0.1;
 
-            for (int x = 0; x < 10; x++)
-            {
-                int y = x;
+            // DEMO: dữ liệu giả, sau này bạn thay bằng dữ liệu đọc từ COM
+            double y1 = Math.Sin(_x);
+            double y2 = Math.Cos(_x * 0.5);
 
-                int z = x * 2;
+            _series1.Points.Add(new DataPoint(_x, y1));
+            _series2.Points.Add(new DataPoint(_x, y2));
 
-                series1.Points.Add(new DataPoint(x, y));
-                series2.Points.Add(new DataPoint(x, z));
-            }
+            // Giữ tối đa 200 điểm để không bị nặng
+            if (_series1.Points.Count > 200) _series1.Points.RemoveAt(0);
+            if (_series2.Points.Count > 200) _series2.Points.RemoveAt(0);
 
-            model.Series.Add(series1);
-            model.Series.Add(series2);
-            MyModel = model;
+            // Auto scroll trục X
+            var xAxis = MyModel.Axes[0];
+            xAxis.Minimum = _x - 20;
+            xAxis.Maximum = _x;
 
-            // cập nhật binding cho PlotView
-            EspPlotView.Model = model;
+            EspPlotView.InvalidatePlot(true);
         }
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
@@ -91,47 +126,34 @@ namespace Esp32
             if (BtnStart.Content.ToString() == "Start")
             {
                 BtnStart.Content = "Stop";
-                
-                //Lay cong COM hien tai
+
+                // Lấy cổng COM đang chọn (sau này bạn dùng để mở SerialPort)
                 var selectedItem = COMComboBox.SelectedItem as string;
-                
-                //Bat dau doc du lieu va ve
-                if (selectedItem != null)
-                {
-                    string comPortName = selectedItem;
-                    DrawData(selectedItem);
-                }
+
+                // Reset dữ liệu nếu muốn mỗi lần Start là vẽ từ đầu
+                _x = 0;
+                _series1.Points.Clear();
+                _series2.Points.Clear();
+
+                // TODO: mở cổng COM ở đây nếu bạn đọc dữ liệu thật
+                // OpenSerialPort(selectedItem);
+
+                _timer.Start();
             }
             else
             {
                 BtnStart.Content = "Start";
-                //Dung viec doc du lieu va xoa do thi
 
-                // 1. Lưu lại trạng thái zoom hiện tại của tất cả axes
-                var axisStates = MyModel.Axes
-                    .Select(a => new
-                    {
-                        Axis = a,
-                        Min = a.ActualMinimum,
-                        Max = a.ActualMaximum
-                    })
-                    .ToList();
+                _timer.Stop();
 
-                // 2. Bắt đầu update để tránh refresh giữa chừng
-                MyModel.Series.Clear();
+                // TODO: đóng cổng COM nếu có dùng
+                // CloseSerialPort();
 
-                // 3. Áp lại zoom cũ cho từng axis
-                foreach (var s in axisStates)
-                {
-                    // Chỉ zoom nếu range hợp lệ
-                    if (!double.IsNaN(s.Min) && !double.IsNaN(s.Max) && s.Min < s.Max)
-                    {
-                        s.Axis.Zoom(s.Min, s.Max);
-                    }
-                }
-
-                // 4. Cập nhật lại plot
-                EspPlotView.InvalidatePlot(true);
+                // Nếu muốn giữ đường vừa vẽ thì KHÔNG cần clear
+                // Nếu muốn xóa luôn:
+                // _series1.Points.Clear();
+                // _series2.Points.Clear();
+                // EspPlotView.InvalidatePlot(true);
             }
         }
 
