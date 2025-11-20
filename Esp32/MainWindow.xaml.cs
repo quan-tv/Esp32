@@ -91,7 +91,7 @@ namespace Esp32
             {
                 var series = new LineSeries
                 {
-                    Title = $"Line {i + 1}",
+                    Title = $"Loadcell {i + 1}",
                     StrokeThickness = 2
                 };
 
