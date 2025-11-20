@@ -1,5 +1,6 @@
 ﻿using OxyPlot;
 using OxyPlot.Axes;
+using OxyPlot.Legends;
 using OxyPlot.Series;
 using OxyPlot.Wpf;
 using System.Diagnostics;
@@ -26,11 +27,11 @@ namespace Esp32
     {
         public PlotModel MyModel { get; set; }
 
-        private LineSeries _series1;
-        private LineSeries _series2;
+        private readonly List<LineSeries> _seriesList = new();   // quản lý tất cả series
         private DispatcherTimer _timer;
         private double _x = 0;
 
+        private const int SeriesCount = 6;   // số series
         public MainWindow()
         {
             InitializeComponent();
@@ -62,32 +63,43 @@ namespace Esp32
         //Khởi tạo đồ thị
         private void InitOxyPlot()
         {
-            var model = new PlotModel { Title = "Đồ thị Esp32 " };
+            var model = new PlotModel { };
 
             model.Axes.Add(new LinearAxis
             {
                 Position = AxisPosition.Bottom,
-                Title = "Thời gian"
+                Title = "Thời gian (s)"
             });
 
             model.Axes.Add(new LinearAxis
             {
                 Position = AxisPosition.Left,
-                Title = "Khối lượng"
+                Title = "Khối lượng (Kg)"
             });
 
-            // Tạo 2 series, giữ lại ở field để timer thêm điểm
-            _series1 = new LineSeries { Title = "Line 1", StrokeThickness = 2 };
-            _series2 = new LineSeries { Title = "Line 2", StrokeThickness = 2 };
+            model.Legends.Add(new Legend
+            {
+                LegendPlacement = LegendPlacement.Inside,
+                LegendPosition = LegendPosition.TopRight,
+                LegendOrientation = LegendOrientation.Vertical,
+                LegendBorderThickness = 0,
+                LegendMargin = 4
+            });
 
-            model.Series.Add(_series1);
-            model.Series.Add(_series2);
+            // Tạo 6 series và add vào list + model
+            for (int i = 0; i < SeriesCount; i++)
+            {
+                var series = new LineSeries
+                {
+                    Title = $"Line {i + 1}",
+                    StrokeThickness = 2
+                };
+
+                _seriesList.Add(series);
+                model.Series.Add(series);
+            }
 
             MyModel = model;
-
-            // Vì đã Binding Model="{Binding MyModel}" trong XAML,
-            // về lý thuyết chỉ cần MyModel = model là đủ.
-            // Nhưng để chắc, vẫn set trực tiếp:
             EspPlotView.Model = model;
         }
 
@@ -102,18 +114,29 @@ namespace Esp32
         {
             _x += 0.1;
 
-            // DEMO: dữ liệu giả, sau này bạn thay bằng dữ liệu đọc từ COM
-            double y1 = Math.Sin(_x);
-            double y2 = Math.Cos(_x * 0.5);
+            // DEMO: 6 giá trị khác nhau, sau này bạn thay bằng dữ liệu đọc từ COM
+            double[] values =
+            {
+                Math.Sin(_x),
+                Math.Cos(_x),
+                Math.Sin(_x * 0.5),
+                Math.Cos(_x * 0.5),
+                Math.Sin(_x * 0.2),
+                Math.Cos(_x * 0.2)
+            };
 
-            _series1.Points.Add(new DataPoint(_x, y1));
-            _series2.Points.Add(new DataPoint(_x, y2));
+            // Đảm bảo mảng values đủ số series
+            int count = Math.Min(_seriesList.Count, values.Length);
 
-            // Giữ tối đa 200 điểm để không bị nặng
-            if (_series1.Points.Count > 200) _series1.Points.RemoveAt(0);
-            if (_series2.Points.Count > 200) _series2.Points.RemoveAt(0);
+            for (int i = 0; i < count; i++)
+            {
+                _seriesList[i].Points.Add(new DataPoint(_x, values[i]));
+            }
 
-            // Auto scroll trục X
+            // KHÔNG xóa dữ liệu cũ nếu muốn vẽ nối tiếp
+            // (nếu muốn giới hạn số điểm thì thêm RemoveAt ở đây)
+
+            // Auto scroll trục X nếu muốn
             var xAxis = MyModel.Axes[0];
             xAxis.Minimum = _x - 20;
             xAxis.Maximum = _x;
@@ -123,37 +146,25 @@ namespace Esp32
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            if (BtnStart.Content.ToString() == "Start")
+            if (BtnStart.Content?.ToString() == "Start")
             {
                 BtnStart.Content = "Stop";
 
-                // Lấy cổng COM đang chọn (sau này bạn dùng để mở SerialPort)
                 var selectedItem = COMComboBox.SelectedItem as string;
 
-                // Reset dữ liệu nếu muốn mỗi lần Start là vẽ từ đầu
+                // Nếu muốn reset mỗi lần Start:
                 _x = 0;
-                _series1.Points.Clear();
-                _series2.Points.Clear();
-
-                // TODO: mở cổng COM ở đây nếu bạn đọc dữ liệu thật
-                // OpenSerialPort(selectedItem);
+                foreach (var s in _seriesList)
+                {
+                    s.Points.Clear();
+                }
 
                 _timer.Start();
             }
             else
             {
                 BtnStart.Content = "Start";
-
                 _timer.Stop();
-
-                // TODO: đóng cổng COM nếu có dùng
-                // CloseSerialPort();
-
-                // Nếu muốn giữ đường vừa vẽ thì KHÔNG cần clear
-                // Nếu muốn xóa luôn:
-                // _series1.Points.Clear();
-                // _series2.Points.Clear();
-                // EspPlotView.InvalidatePlot(true);
             }
         }
 

@@ -20,7 +20,7 @@
                 <!-- Plot -->
                 <ColumnDefinition Width="Auto"/>
                 <!-- Đường kẻ dọc -->
-                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="200"/>
                 <!-- Panel -->
             </Grid.ColumnDefinitions>
 
@@ -41,17 +41,18 @@
                     Margin="10"
                     VerticalAlignment="Top">
                 <StackPanel Orientation="Horizontal">
-                    <Label Content="Chọn hàm số:" FontWeight="Bold" />
+                    <Label Content="Cổng COM:" FontWeight="Bold" Width="70" VerticalAlignment="Center"/>
 
                     <ComboBox x:Name="COMComboBox"
                           Margin="0,5,0,10"
-                          Width="160">
+                          Width="100">
                     </ComboBox>
                 </StackPanel>
 
                 <Button x:Name="BtnStart" Content="Start"
-                    Width="250"
+                    Width="170"
                     Height="30"
+                        HorizontalAlignment="Left"
                     Click="StartButton_Click"/>
             </StackPanel>
         </Grid>
