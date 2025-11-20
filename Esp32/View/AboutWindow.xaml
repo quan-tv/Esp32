@@ -16,6 +16,7 @@
 
         <TextBlock Text="Day là text gioi thieu phan mem"></TextBlock>
         <TextBlock Grid.Row="1" Text="Day là text gioi thieu tac gia"></TextBlock>
-        <Button x:Name="BtnOK" Grid.Row="2" Margin="5" Content="OK" Width="100" Click="BtnOK_Click"></Button>
+        <Rectangle Grid.Row="2" Fill="LightGray"></Rectangle>
+        <Button Grid.Row="2" x:Name="BtnOK" Margin="5" Content="OK" Width="100" Click="BtnOK_Click"></Button>
     </Grid>
 </Window>
